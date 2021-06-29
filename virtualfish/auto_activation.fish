@@ -50,9 +50,12 @@ function __vfsupport_auto_activate --on-variable PWD
     # Projects stored in $PROJECT_HOME typically don't have .project files. To accommodate users
     # that keep all their projects in $PROJECT_HOME, deactivate virtualenv if it wasn't
     # auto-activated, doesn't contain .project file and $PWD is not a sudirectory of $PROJECT_HOME
-    else if begin set -q VIRTUAL_ENV; and not set -q VF_AUTO_ACTIVATED project_path; end
-        if begin not string match -qr -- "$PROJECT_HOME" "$PWD"; or test "$PROJECT_HOME" = "$PWD"; end
-            vf deactivate
+    else if begin set -q VIRTUAL_ENV; and not set -q VF_AUTO_ACTIVATED; and not set -q project_path; end
+        # Make sure current VIRTUAL_ENV is a project
+        if contains (basename $VIRTUAL_ENV) (vf lsprojects)
+            if begin not string match -qr -- "$PROJECT_HOME" "$PWD"; or test "$PROJECT_HOME" = "$PWD"; end
+                vf deactivate
+            end
         end
     else
         # if there's an auto-activated virtualenv, deactivate it
